@@ -1,6 +1,12 @@
 # fkirc/skip-duplicate-actions
 
-Hardened GitHub Action by [Chainguard](https://www.chainguard.dev).
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/fkirc/skip-duplicate-actions](https://github.com/fkirc/skip-duplicate-actions).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v5.3.1 | [`v5.3.1`](https://github.com/chainguard-actions/skip-duplicate-actions/tree/v5.3.1) | — |
 
 ## Privacy
 
