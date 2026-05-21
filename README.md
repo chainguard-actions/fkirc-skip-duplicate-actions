@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v5.3.1 | [`v5.3.1`](https://github.com/chainguard-actions/fkirc--skip-duplicate-actions/tree/v5.3.1) | — |
+| v5.3.1 | [`v5.3.1`](https://github.com/chainguard-actions/fkirc-skip-duplicate-actions/tree/v5.3.1) | — |
 
 ## Privacy
 
