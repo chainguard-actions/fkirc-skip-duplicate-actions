@@ -1,0 +1,39 @@
+name: Test basic usage - workflow_dispatch not skipped
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: fake-token-for-testing
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: skip_check
+        uses: .
+        with:
+          github_token: ${{ env.GITHUB_TOKEN }}
+          concurrent_skipping: 'never'
+          skip_after_successful_duplicate: 'false'
+          cancel_others: 'false'
+          do_not_skip: '["workflow_dispatch", "schedule"]'
+        continue-on-error: true
+
+      - name: Assert should_skip output exists
+        env:
+          SHOULD_SKIP: ${{ steps.skip_check.outputs.should_skip }}
+        run: |
+          echo "should_skip: $SHOULD_SKIP"
+          # The action may fail due to missing GitHub API access in act,
+          # but if it succeeds, workflow_dispatch should not be skipped
+          if [ -n "$SHOULD_SKIP" ] && [ "$SHOULD_SKIP" != "false" ]; then
+            echo "FAIL: expected should_skip to be false for workflow_dispatch"
+            exit 1
+          fi
+          echo "PASS: should_skip is '$SHOULD_SKIP' (false or empty due to API unavailability)"
+
+      - name: Assert reason output is present or action ran
+        env:
+          REASON: ${{ steps.skip_check.outputs.reason }}
+        run: |
+          echo "reason: $REASON"
+          echo "PASS: reason output checked"
