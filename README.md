@@ -1,6 +1,6 @@
 # fkirc/skip-duplicate-actions
 
-Save time and cost when using GitHub Actions
+Skip duplicate workflow runs. Skip or ignore specific paths. Cancel outdated workflow runs.
 
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/fkirc/skip-duplicate-actions](https://github.com/fkirc/skip-duplicate-actions).
 
