@@ -1,0 +1,26 @@
+name: Test concurrent_skipping=always
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          concurrent_skipping: 'always'
+      - name: Assert action completes and outputs are set
+        env:
+          SHOULD_SKIP: ${{ steps.action.outputs.should_skip }}
+          REASON: ${{ steps.action.outputs.reason }}
+        run: |
+          echo "should_skip: $SHOULD_SKIP"
+          echo "reason: $REASON"
+          # workflow_dispatch is in do_not_skip by default, so should_skip must be false
+          if [ "$SHOULD_SKIP" != "false" ]; then
+            echo "FAIL: expected should_skip=false for workflow_dispatch (in do_not_skip list)"
+            exit 1
+          fi
+          echo "PASS: should_skip=false as expected"
