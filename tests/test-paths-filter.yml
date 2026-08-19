@@ -1,21 +1,15 @@
-name: Test paths_filter input coverage
+name: Test paths_filter input
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: fake-token-for-testing
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: skip_check
+      - id: action
         uses: .
         with:
-          github_token: ${{ env.GITHUB_TOKEN }}
-          concurrent_skipping: 'never'
-          skip_after_successful_duplicate: 'false'
-          cancel_others: 'false'
-          do_not_skip: '["workflow_dispatch", "schedule"]'
+          github_token: ${{ github.token }}
           paths_filter: |
             src:
               paths:
@@ -23,19 +17,30 @@ jobs:
             docs:
               paths_ignore:
                 - 'docs/**'
-        continue-on-error: true
-
-      - name: Assert paths_result output is present or action ran
+          concurrent_skipping: 'never'
         env:
-          PATHS_RESULT: ${{ steps.skip_check.outputs.paths_result }}
-          SHOULD_SKIP: ${{ steps.skip_check.outputs.should_skip }}
+          GITHUB_EVENT_NAME: workflow_dispatch
+      - name: Assert should_skip output exists
+        env:
+          SHOULD_SKIP: ${{ steps.action.outputs.should_skip }}
+          REASON: ${{ steps.action.outputs.reason }}
+          PATHS_RESULT: ${{ steps.action.outputs.paths_result }}
         run: |
-          echo "paths_result: $PATHS_RESULT"
           echo "should_skip: $SHOULD_SKIP"
-          # The action may fail due to missing GitHub API access in act,
-          # but if it succeeds, workflow_dispatch should not be skipped
-          if [ -n "$SHOULD_SKIP" ] && [ "$SHOULD_SKIP" != "false" ]; then
-            echo "FAIL: expected should_skip to be false for workflow_dispatch"
+          echo "reason: $REASON"
+          echo "paths_result: $PATHS_RESULT"
+          if [ -z "$SHOULD_SKIP" ]; then
+            echo "FAIL: should_skip output is empty"
             exit 1
           fi
-          echo "PASS: paths_filter input accepted and paths_result output checked"
+          echo "PASS: should_skip output is present"
+      - name: Assert should_skip is false for workflow_dispatch
+        env:
+          SHOULD_SKIP: ${{ steps.action.outputs.should_skip }}
+        run: |
+          echo "should_skip: $SHOULD_SKIP"
+          if [ "$SHOULD_SKIP" != "false" ]; then
+            echo "FAIL: expected should_skip=false for workflow_dispatch (it is in do_not_skip list)"
+            exit 1
+          fi
+          echo "PASS: should_skip is false as expected"

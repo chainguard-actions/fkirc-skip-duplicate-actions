@@ -1,4 +1,4 @@
-name: Test basic usage
+name: Test push event with cancel_others
 on:
   workflow_dispatch:
 jobs:
@@ -10,9 +10,13 @@ jobs:
         uses: .
         with:
           github_token: ${{ github.token }}
+          cancel_others: 'false'
+          skip_after_successful_duplicate: 'true'
           concurrent_skipping: 'never'
+          do_not_skip: '["workflow_dispatch", "schedule"]'
         env:
-          GITHUB_EVENT_NAME: workflow_dispatch
+          GITHUB_EVENT_NAME: push
+          GITHUB_REF: refs/heads/main
       - name: Assert should_skip output exists
         env:
           SHOULD_SKIP: ${{ steps.action.outputs.should_skip }}
@@ -25,13 +29,13 @@ jobs:
             exit 1
           fi
           echo "PASS: should_skip output is present"
-      - name: Assert should_skip is false for workflow_dispatch
+      - name: Assert reason output exists
         env:
-          SHOULD_SKIP: ${{ steps.action.outputs.should_skip }}
+          REASON: ${{ steps.action.outputs.reason }}
         run: |
-          echo "should_skip: $SHOULD_SKIP"
-          if [ "$SHOULD_SKIP" != "false" ]; then
-            echo "FAIL: expected should_skip=false for workflow_dispatch (it is in do_not_skip list)"
+          echo "reason: $REASON"
+          if [ -z "$REASON" ]; then
+            echo "FAIL: reason output is empty"
             exit 1
           fi
-          echo "PASS: should_skip is false as expected"
+          echo "PASS: reason output is present"
