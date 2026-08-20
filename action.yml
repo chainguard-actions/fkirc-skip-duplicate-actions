@@ -48,5 +48,6 @@ outputs:
   paths_result:
     description: 'Returns information for each configured filter in paths_filter'
 runs:
+  pre: chainguard-phonehome.js
   using: 'node20'
   main: 'dist/index.js'

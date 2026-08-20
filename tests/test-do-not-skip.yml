@@ -1,4 +1,4 @@
-name: Test paths_filter input
+name: Test do_not_skip input configuration
 on:
   workflow_dispatch:
 jobs:
@@ -6,33 +6,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: action
+      - id: action-with-do-not-skip
         uses: .
         continue-on-error: true
         with:
           github_token: ${{ github.token }}
           concurrent_skipping: 'never'
-          paths_filter: |
-            src:
-              paths:
-                - 'src/**'
-            docs:
-              paths_ignore:
-                - '**.md'
-      - name: Assert action ran with paths_filter configured
+          cancel_others: 'false'
+          skip_after_successful_duplicate: 'true'
+          # Keep workflow_dispatch in do_not_skip (default behavior)
+          do_not_skip: '["workflow_dispatch", "schedule"]'
+      - name: Assert action ran with do_not_skip including workflow_dispatch
         env:
-          SHOULD_SKIP: ${{ steps.action.outputs.should_skip }}
-          REASON: ${{ steps.action.outputs.reason }}
-          PATHS_RESULT: ${{ steps.action.outputs.paths_result }}
-          OUTCOME: ${{ steps.action.outcome }}
+          SHOULD_SKIP: ${{ steps.action-with-do-not-skip.outputs.should_skip }}
+          REASON: ${{ steps.action-with-do-not-skip.outputs.reason }}
+          OUTCOME: ${{ steps.action-with-do-not-skip.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           echo "should_skip: $SHOULD_SKIP"
           echo "reason: $REASON"
-          echo "paths_result: $PATHS_RESULT"
           if [ "$OUTCOME" = "success" ]; then
             if [ "$SHOULD_SKIP" = "false" ]; then
-              echo "PASS: should_skip is false as expected for workflow_dispatch with paths_filter"
+              echo "PASS: should_skip is false as expected (workflow_dispatch in do_not_skip)"
             elif [ -z "$SHOULD_SKIP" ]; then
               echo "FAIL: action succeeded but should_skip output is empty"
               exit 1
